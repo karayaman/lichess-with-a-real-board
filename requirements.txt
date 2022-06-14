@@ -1,0 +1,8 @@
+opencv-python
+python-chess
+numpy
+pyttsx3
+scikit-image
+pygrabber
+mac-say
+berserk
