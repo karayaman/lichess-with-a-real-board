@@ -26,10 +26,16 @@ You need to run the GUI to do the steps in Setup and Usage sections and customiz
 1. Place pieces of the chess board to their starting position.
 2. Start the Lichess game.
 3. Click "Start Game" button.
-5.  Wait until it says "game started".
-6. Make your move if it's your turn, otherwise make your opponent's move.
-8. Notice that it actually makes your move in the Lichess game, if it's your turn. Otherwise, wait until it says the starting and ending squares of the opponent's move. 
-9. Go to step 5.
+4. Wait until it says "game started".
+5. Make your move if it's your turn, otherwise make your opponent's move.
+6. Notice that it actually makes your move in the Lichess game, if it's your turn. Otherwise, wait until it says the starting and ending squares of the opponent's move. 
+7. Go to step 5.
+
+## Video
+
+In this section you can find video content related to the software.
+
+[Playing a game on Lichess.org, using lichess-with-a-real-board software, created by Alper Karayaman.](https://youtu.be/W0mohAhS4hI)
 
 ## Required libraries
 
@@ -42,8 +48,3 @@ You need to run the GUI to do the steps in Setup and Usage sections and customiz
 - mac-say
 - berserk
 
-## Video
-
-In this section you can find video content related to the software.
-
-[Playing a game on Lichess.org, using lichess-with-a-real-board software, created by Alper Karayaman.](https://youtu.be/W0mohAhS4hI)
