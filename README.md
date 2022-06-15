@@ -41,3 +41,9 @@ You need to run the GUI to do the steps in Setup and Usage sections and customiz
 - pygrabber
 - mac-say
 - berserk
+
+## Video
+
+In this section you can find video content related to the software.
+
+[Playing a game on Lichess.org, using lichess-with-a-real-board software, created by Alper Karayaman.](https://youtu.be/W0mohAhS4hI)
