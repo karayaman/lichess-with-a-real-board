@@ -9,7 +9,7 @@ You need to run the GUI to do the steps in Setup and Usage sections and customiz
 
 ## Setup
 
-1. Generate a  [Lichess API Access Token](https://lichess.org/account/oauth/token) . You need to enable "Play games with the board API" while generating the token. Then, enter the token to the GUI.
+1. Generate a  [Lichess API Access Token](https://lichess.org/account/oauth/token/create?scopes[]=board:play&description=Lichess+with+a+real+board). Then, enter the token to the GUI.
 
 2. Place your webcam near to your chessboard so that all of the squares and pieces can be clearly seen by it.
 
