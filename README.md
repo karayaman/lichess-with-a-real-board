@@ -37,6 +37,8 @@ In this section you can find video content related to the software.
 
 [Playing a game on Lichess.org, using lichess-with-a-real-board software, created by Alper Karayaman.](https://youtu.be/W0mohAhS4hI)
 
+[SergeiKolupajev vs LastPawn Standing game on Lichess.org](https://youtu.be/gsX7vxEoxLA)
+
 ## Required libraries
 
 - opencv-python
