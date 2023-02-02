@@ -50,3 +50,12 @@ In this section you can find video content related to the software.
 - mac-say
 - berserk
 
+## Running it on macOS
+
+You need to have [Homebrew](https://brew.sh/) installed and run
+
+```sh
+$ brew install python-tk
+```
+
+This is needed to start the GUI via `python3 gui.py` (obviously you need to have Python 3 installed in your system too).
