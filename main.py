@@ -20,6 +20,9 @@ cap_api = cv2.CAP_ANY
 voice_index = 0
 language = English()
 token = ""
+is_broadcast = False
+pgn_path = ''
+move_search_depth = 1
 for argument in sys.argv:
     if argument == "comment-me":
         comment_me = True
@@ -49,6 +52,11 @@ for argument in sys.argv:
             language = French()
     elif argument.startswith("token="):
         token = argument[len("token="):].strip()
+    elif argument.startswith("pgn="):
+        is_broadcast = True
+        pgn_path = argument[len("pgn="):]
+        move_search_depth = 2
+
 MOTION_START_THRESHOLD = 1.0
 HISTORY = 100
 MAX_MOVE_MEAN = 50
@@ -66,10 +74,11 @@ board_basics = Board_basics(side_view_compensation, rotation_count)
 speech_thread = Speech_thread()
 speech_thread.daemon = True
 speech_thread.index = voice_index
+speech_thread.is_broadcast = is_broadcast
 speech_thread.start()
 
 game = Game(board_basics, speech_thread, comment_me, comment_opponent,
-            language, token, roi_mask)
+            language, token, roi_mask, is_broadcast, pgn_path)
 
 video_capture_thread = Video_capture_thread()
 video_capture_thread.daemon = True
@@ -132,16 +141,21 @@ previous_frame = stabilize_background_subtractors()
 previous_frame_queue = deque(maxlen=10)
 previous_frame_queue.append(previous_frame)
 speech_thread.put_text(language.game_started)
-game.commentator.start()
-while game.commentator.game_state.variant == 'wait':
-    time.sleep(0.1)
-if game.commentator.game_state.variant == 'standard':
+if game.commentator:
+    game.commentator.start()
+    while game.commentator.game_state.variant == 'wait':
+        time.sleep(0.1)
+    if game.commentator.game_state.variant == 'standard':
+        board_basics.initialize_ssim(previous_frame)
+        game.initialize_hog(previous_frame)
+    else:
+        board_basics.load_ssim()
+        game.load_hog()
+else:
     board_basics.initialize_ssim(previous_frame)
     game.initialize_hog(previous_frame)
-else:
-    board_basics.load_ssim()
-    game.load_hog()
-while not game.board.is_game_over() and not game.commentator.game_state.resign_or_draw:
+
+while not game.board.is_game_over() and not (game.commentator and game.commentator.game_state.resign_or_draw):
     sys.stdout.flush()
     frame = video_capture_thread.get_frame()
     frame = perspective_transform(frame, pts1)
@@ -165,19 +179,19 @@ while not game.board.is_game_over() and not game.commentator.game_state.resign_o
         move_fgbg.apply(frame, learningRate=1.0)
         last_frame = stabilize_background_subtractors()
         previous_frame = previous_frame_queue[0]
-
-        if (game.is_light_change(last_frame) == False) and game.register_move(fgmask, previous_frame, last_frame):
-            pass
-            # cv2.imwrite(game.executed_moves[-1] + " frame.jpg", last_frame)
-            # cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)
-            # cv2.imwrite(game.executed_moves[-1] + " background.jpg", previous_frame)
-        else:
-            pass
-            # import uuid
-            # id = str(uuid.uuid1())
-            # cv2.imwrite(id+"frame_fail.jpg", last_frame)
-            # cv2.imwrite(id+"mask_fail.jpg", fgmask)
-            # cv2.imwrite(id+"background_fail.jpg", previous_frame)
+        for _ in range(move_search_depth):
+            if (game.is_light_change(last_frame) == False) and game.register_move(fgmask, previous_frame, last_frame):
+                pass
+                # cv2.imwrite(game.executed_moves[-1] + " frame.jpg", last_frame)
+                # cv2.imwrite(game.executed_moves[-1] + " mask.jpg", fgmask)
+                # cv2.imwrite(game.executed_moves[-1] + " background.jpg", previous_frame)
+            else:
+                break
+                # import uuid
+                # id = str(uuid.uuid1())
+                # cv2.imwrite(id+"frame_fail.jpg", last_frame)
+                # cv2.imwrite(id+"mask_fail.jpg", fgmask)
+                # cv2.imwrite(id+"background_fail.jpg", previous_frame)
         previous_frame_queue = deque(maxlen=10)
         previous_frame_queue.append(last_frame)
     else:
