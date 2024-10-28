@@ -6,6 +6,7 @@ import sys
 from collections import deque
 import platform
 
+from board_calibration_machine_learning import detect_board
 from game import Game
 from board_basics import Board_basics
 from helper import perspective_transform
@@ -15,6 +16,7 @@ from languages import *
 
 comment_me = False
 comment_opponent = False
+calibrate = False
 cap_index = 0
 cap_api = cv2.CAP_ANY
 voice_index = 0
@@ -23,6 +25,7 @@ token = ""
 is_broadcast = False
 pgn_path = ''
 move_search_depth = 1
+video_path = ""
 for argument in sys.argv:
     if argument == "comment-me":
         comment_me = True
@@ -56,6 +59,10 @@ for argument in sys.argv:
         is_broadcast = True
         pgn_path = argument[len("pgn="):]
         move_search_depth = 2
+    elif argument == "calibrate":
+        calibrate = True
+    elif argument.startswith("vpath="):
+        video_path = argument[len("vpath="):]
 
 MOTION_START_THRESHOLD = 1.0
 HISTORY = 100
@@ -65,10 +72,57 @@ COUNTER_MAX_VALUE = 3
 move_fgbg = cv2.createBackgroundSubtractorKNN()
 motion_fgbg = cv2.createBackgroundSubtractorKNN(history=HISTORY)
 
-filename = 'constants.bin'
-infile = open(filename, 'rb')
-corners, side_view_compensation, rotation_count, roi_mask = pickle.load(infile)
-infile.close()
+video_capture_thread = Video_capture_thread()
+video_capture_thread.daemon = True
+if video_path:
+    video_capture_thread.capture = cv2.VideoCapture(video_path)
+    video_capture_thread.is_transcribe = True
+else:
+    video_capture_thread.capture = cv2.VideoCapture(cap_index, cap_api)
+
+
+if calibrate:
+    corner_model = cv2.dnn.readNetFromONNX("yolo_corner.onnx")
+    piece_model = cv2.dnn.readNetFromONNX("cnn_piece.onnx")
+    color_model = cv2.dnn.readNetFromONNX("cnn_color.onnx")
+
+    for _ in range(10):
+        ret, frame = video_capture_thread.capture.read()
+        if ret == False:
+            print("Error reading frame. Please check your webcam connection.")
+            continue
+    is_detected = False
+    for _ in range(100):
+        ret, frame = video_capture_thread.capture.read()
+        if ret == False:
+            print("Error reading frame. Please check your webcam connection.")
+            continue
+        result = detect_board(frame, corner_model, piece_model, color_model)
+        if result:
+            pts1, side_view_compensation, rotation_count = result
+            roi_mask = None
+            is_detected = True
+            break
+
+    if not is_detected:
+        print("Could not detect the chess board.")
+        video_capture_thread.capture.release()
+        sys.exit(0)
+else:
+    filename = 'constants.bin'
+    infile = open(filename, 'rb')
+    calibration_data = pickle.load(infile)
+    infile.close()
+    if calibration_data[0]:
+        pts1, side_view_compensation, rotation_count = calibration_data[1]
+        roi_mask = None
+    else:
+        corners, side_view_compensation, rotation_count, roi_mask = calibration_data[1]
+        pts1 = np.float32([list(corners[0][0]), list(corners[8][0]), list(corners[0][8]),
+                           list(corners[8][8])])
+
+video_capture_thread.start()
+
 board_basics = Board_basics(side_view_compensation, rotation_count)
 
 speech_thread = Speech_thread()
@@ -79,14 +133,6 @@ speech_thread.start()
 
 game = Game(board_basics, speech_thread, comment_me, comment_opponent,
             language, token, roi_mask, is_broadcast, pgn_path)
-
-video_capture_thread = Video_capture_thread()
-video_capture_thread.daemon = True
-video_capture_thread.capture = cv2.VideoCapture(cap_index, cap_api)
-video_capture_thread.start()
-
-pts1 = np.float32([list(corners[0][0]), list(corners[8][0]), list(corners[0][8]),
-                   list(corners[8][8])])
 
 
 def waitUntilMotionCompletes():
