@@ -79,6 +79,9 @@ if video_path:
     video_capture_thread.is_transcribe = True
 else:
     video_capture_thread.capture = cv2.VideoCapture(cap_index, cap_api)
+    video_capture_thread.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    video_capture_thread.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    video_capture_thread.capture.set(cv2.CAP_PROP_FPS, 60)
 
 
 if calibrate:
