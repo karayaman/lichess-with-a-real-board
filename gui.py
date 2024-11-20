@@ -59,6 +59,14 @@ def diagnostic(ignore=None):
     if selected_camera != OPTIONS[0]:
         cap_index = OPTIONS.index(selected_camera) - 1
         arguments.append("cap=" + str(cap_index))
+    selected_resolution = resolution.get()
+    if selected_resolution != RESOLUTION_OPTIONS[0]:
+        width, height = selected_resolution.split(" x ")
+        arguments.append(f"width={width}")
+        arguments.append(f"height={height}")
+    selected_fps = fps.get()
+    if selected_fps != FPS_OPTIONS[0]:
+        arguments.append(f"fps={selected_fps}")
     if (calibration_mode.get() == CALIBRATION_OPTIONS[-1]) or (selected_tab == 2):
         arguments.append("calibrate")
     if selected_tab == 2:
@@ -103,6 +111,14 @@ def board_calibration(ignore=None):
     if selected_camera != OPTIONS[0]:
         cap_index = OPTIONS.index(selected_camera) - 1
         arguments.append("cap=" + str(cap_index))
+    selected_resolution = resolution.get()
+    if selected_resolution != RESOLUTION_OPTIONS[0]:
+        width, height = selected_resolution.split(" x ")
+        arguments.append(f"width={width}")
+        arguments.append(f"height={height}")
+    selected_fps = fps.get()
+    if selected_fps != FPS_OPTIONS[0]:
+        arguments.append(f"fps={selected_fps}")
     if calibration_mode.get() == CALIBRATION_OPTIONS[-1]:
         return
     elif calibration_mode.get() == CALIBRATION_OPTIONS[1]:
@@ -131,7 +147,14 @@ def start_game(ignore=None):
     if selected_camera != OPTIONS[0]:
         cap_index = OPTIONS.index(selected_camera) - 1
         arguments.append("cap=" + str(cap_index))
-
+    selected_resolution = resolution.get()
+    if selected_resolution != RESOLUTION_OPTIONS[0]:
+        width, height = selected_resolution.split(" x ")
+        arguments.append(f"width={width}")
+        arguments.append(f"height={height}")
+    selected_fps = fps.get()
+    if selected_fps != FPS_OPTIONS[0]:
+        arguments.append(f"fps={selected_fps}")
     selected_tab = notebook.index(notebook.select())
     if (calibration_mode.get() == CALIBRATION_OPTIONS[-1]) or (selected_tab == 2):
         arguments.append("calibrate")
@@ -241,8 +264,31 @@ menu = tk.OptionMenu(menu_frame, camera, *OPTIONS)
 menu.config(width=max(len(option) for option in OPTIONS), anchor="w")
 menu.grid(column=1, row=0, sticky=tk.W)
 
+resolution_frame = tk.Frame(play_frame)
+resolution_frame.grid(row=2, column=0, columnspan=2, sticky="W")
+resolution = tk.StringVar()
+RESOLUTION_OPTIONS = ["Default", "640 x 480", "1280 x 720", "1920 x 1080", "2560 x 1440", "3840 x 2160"]
+resolution.set(RESOLUTION_OPTIONS[0])
+resolution_label = tk.Label(resolution_frame, text='Select Webcam Resolution:')
+resolution_label.grid(column=0, row=0, sticky=tk.W)
+resolution_menu = tk.OptionMenu(resolution_frame, resolution, *RESOLUTION_OPTIONS)
+resolution_menu.config(width=max(len(option) for option in RESOLUTION_OPTIONS), anchor="w")
+resolution_menu.grid(column=1, row=0, sticky=tk.W)
+
+fps_frame = tk.Frame(play_frame)
+fps_frame.grid(row=3, column=0, columnspan=2, sticky="W")
+fps = tk.StringVar()
+FPS_OPTIONS = ["Default", "15", "24", "30", "60", "120", "144", "240"]
+fps.set(FPS_OPTIONS[0])
+fps_label = tk.Label(fps_frame, text='Select Webcam FPS:')
+fps_label.grid(column=0, row=0, sticky=tk.W)
+fps_menu = tk.OptionMenu(fps_frame, fps, *FPS_OPTIONS)
+fps_menu.config(width=max(len(option) for option in FPS_OPTIONS), anchor="w")
+fps_menu.grid(column=1, row=0, sticky=tk.W)
+
+
 calibration_frame = tk.Frame(play_frame)
-calibration_frame.grid(row=2, column=0, columnspan=2, sticky="W")
+calibration_frame.grid(row=4, column=0, columnspan=2, sticky="W")
 calibration_mode = tk.StringVar()
 CALIBRATION_OPTIONS = ["The board is empty.", "Pieces are in their starting positions.",
                        "Just before the game starts."]
@@ -254,7 +300,7 @@ calibration_menu.config(width=max(len(option) for option in CALIBRATION_OPTIONS)
 calibration_menu.grid(column=1, row=0, sticky=tk.W)
 
 voice_frame = tk.Frame(play_frame)
-voice_frame.grid(row=3, column=0, columnspan=2, sticky="W")
+voice_frame.grid(row=5, column=0, columnspan=2, sticky="W")
 voice = tk.StringVar()
 VOICE_OPTIONS = ["Default"]
 try:
@@ -305,7 +351,7 @@ def save_pgn_result(*args):
 
 
 promotion_frame = tk.Frame(play_frame)
-promotion_frame.grid(row=4, column=0, columnspan=2, sticky="W")
+promotion_frame.grid(row=6, column=0, columnspan=2, sticky="W")
 promotion = tk.StringVar()
 promotion.trace("w", save_promotion)
 PROMOTION_OPTIONS = ["Queen", "Knight", "Rook", "Bishop"]
@@ -318,10 +364,10 @@ promotion_menu.grid(column=1, row=0, sticky=tk.W)
 promotion_menu.configure(state="disabled")
 
 c2 = tk.Checkbutton(play_frame, text="Speak my moves.", variable=comment_me)
-c2.grid(row=5, column=0, sticky="W", columnspan=1)
+c2.grid(row=7, column=0, sticky="W", columnspan=1)
 
 c3 = tk.Checkbutton(play_frame, text="Speak opponent's moves.", variable=comment_opponent)
-c3.grid(row=6, column=0, sticky="W", columnspan=1)
+c3.grid(row=8, column=0, sticky="W", columnspan=1)
 
 button_frame = tk.Frame(window)
 button_frame.grid(row=1, column=0, columnspan=3, sticky="W")
@@ -339,7 +385,7 @@ scroll_bar.config(command=logs_text.yview)
 scroll_bar.pack(side=tk.RIGHT, fill=tk.Y)
 logs_text.pack(side="left")
 
-fields = [comment_me, comment_opponent, calibration_mode, camera, voice, token]
+fields = [comment_me, comment_opponent, calibration_mode, resolution, fps, camera, voice, token]
 save_file = 'gui.bin'
 
 
@@ -363,7 +409,7 @@ def load_settings():
         if variables[-3] in OPTIONS:
             camera.set(variables[-3])
 
-        for i in range(3):
+        for i in range(5):
             fields[i].set(variables[i])
 
         pgn_variables = [pgn_folder, pgn_name] + [pgn_tag_mapping[pgn_tag] for pgn_tag in pgn_tag_list]

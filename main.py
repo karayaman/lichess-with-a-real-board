@@ -14,6 +14,9 @@ from speech import Speech_thread
 from videocapture import Video_capture_thread
 from languages import *
 
+webcam_width = None
+webcam_height = None
+fps = None
 comment_me = False
 comment_opponent = False
 calibrate = False
@@ -63,6 +66,12 @@ for argument in sys.argv:
         calibrate = True
     elif argument.startswith("vpath="):
         video_path = argument[len("vpath="):]
+    elif argument.startswith("width="):
+        webcam_width = int(argument[len("width="):])
+    elif argument.startswith("height="):
+        webcam_height = int(argument[len("height="):])
+    elif argument.startswith("fps="):
+        fps = int(argument[len("fps="):])
 
 MOTION_START_THRESHOLD = 1.0
 HISTORY = 100
@@ -79,9 +88,12 @@ if video_path:
     video_capture_thread.is_transcribe = True
 else:
     video_capture_thread.capture = cv2.VideoCapture(cap_index, cap_api)
-    video_capture_thread.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-    video_capture_thread.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
-    video_capture_thread.capture.set(cv2.CAP_PROP_FPS, 60)
+    if webcam_width is not None:
+        video_capture_thread.capture.set(cv2.CAP_PROP_FRAME_WIDTH, webcam_width)
+    if webcam_height is not None:
+        video_capture_thread.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, webcam_height)
+    if fps is not None:
+        video_capture_thread.capture.set(cv2.CAP_PROP_FPS, fps)
 
 
 if calibrate:
