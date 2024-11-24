@@ -98,6 +98,8 @@ In this section you can find video content related to the software.
 
 [SergeiKolupajev vs LastPawn Standing game on Lichess.org](https://youtu.be/gsX7vxEoxLA)
 
+[Lichess with a real board by Alper Karayaman](https://youtu.be/CN450BYi1-Q)
+
 ## Required libraries
 
 - opencv-python
